@@ -1,9 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
-  --hand-size: 110px;
+  /* Medidas fluidas: se adaptan solas al ancho de la pantalla sin @media.
+     clamp(minimo, valor-fluido, maximo) -> nunca baja del min ni sube del max.
+     1vw = 1% del ancho de la ventana. */
+  --hand-size: clamp(52px, 15vw, 110px);
+  --hand-gap: clamp(4px, 1.2vw, 10px);
   --game-max-width: 680px;
-  --page-padding: 32px;
+  --page-padding: clamp(12px, 3vw, 32px);
 
   --border-box: 4px solid;
   --border-box-roca-color: #6D581C;
@@ -23,6 +27,13 @@
   box-sizing: border-box;
 }
 
+/* Escala la base de los rem segun el ancho: en movil todo encoge de forma
+   proporcional, en escritorio se queda en los 16px de siempre.
+   Como TODO el proyecto usa rem, esta linea reescala cada texto del juego. */
+html {
+  font-size: clamp(11px, 2.2vw, 16px);
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -31,4 +42,9 @@ html, body {
   font-family: 'Press Start 2P', cursive;
   color: #ffffff;
   overflow-x: hidden;
+}
+
+/* Ninguna imagen debe desbordar ni deformarse al encogerse el contenedor */
+img {
+  max-width: 100%;
 }

@@ -26,13 +26,16 @@
 
 .opciones {
   display: flex;
-  gap: 24px;
+  flex-wrap: wrap;         /* en movil los botones se apilan */
+  justify-content: center;
+  gap: clamp(12px, 3vw, 24px);
+  width: 100%;
 }
 
 .btn {
   font-size: 0.75rem !important;
-  padding: 16px 28px !important;
-  min-width: 180px;
+  padding: 16px clamp(14px, 4vw, 28px) !important;
+  min-width: min(180px, 100%);
 }
 
 .panel {
@@ -63,7 +66,9 @@
 
 .rondasOpciones {
   display: flex;
-  gap: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(16px, 5vw, 40px);
 }
 
 .rondasOpcion {
@@ -76,13 +81,15 @@
 
 .acciones {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 20px);
 }
 
 .codigoInput {
-  font-size: 1.2rem !important;
+  font-size: clamp(0.9rem, 4vw, 1.2rem) !important;
   text-align: center;
-  letter-spacing: 8px;
+  letter-spacing: clamp(2px, 1vw, 8px);
   max-width: 280px;
   width: 100%;
 }

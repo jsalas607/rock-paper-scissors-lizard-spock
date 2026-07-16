@@ -24,7 +24,8 @@
 
 .rounds-options {
   display: flex;
-  gap: 40px;
+  flex-wrap: wrap;
+  gap: clamp(16px, 5vw, 40px);
   justify-content: center;
   align-items: center;
 }
@@ -48,6 +49,6 @@
 
 .multi-btn {
   font-size: 0.65rem !important;
-  padding: 14px 28px !important;
-  min-width: 240px;
+  padding: 14px clamp(14px, 4vw, 28px) !important;
+  min-width: min(240px, 100%);
 }
