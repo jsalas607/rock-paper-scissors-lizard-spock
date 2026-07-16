@@ -2,12 +2,6 @@
 import { useToast } from '@/src/context/ToastContext'
 import styles from './Toast.module.css'
 
-const typeClass = {
-  error: 'is-error',
-  success: 'is-success',
-  warning: 'is-warning',
-}
-
 const Toast = () => {
   const { toasts } = useToast()
 
@@ -18,7 +12,8 @@ const Toast = () => {
       {toasts.map(toast => (
         <div
           key={toast.id}
-          className={`nes-container ${typeClass[toast.type] ?? 'is-error'} ${styles.toast}`}
+          role="alert"
+          className={`nes-container is-rounded ${styles.toast}`}
         >
           <p className={styles.message}>{toast.message}</p>
         </div>
