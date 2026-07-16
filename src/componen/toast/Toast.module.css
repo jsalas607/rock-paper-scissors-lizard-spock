@@ -1,35 +1,46 @@
+/* Centrado en mitad de la pantalla: imposible que las manos lo tapen */
 .container {
   position: fixed;
-  bottom: 32px;
-  right: 32px;
-  left: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 9999;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 12px;
-  pointer-events: none;
-  max-width: 360px;
+  pointer-events: none;   /* no bloquea clics en lo que hay debajo */
+  width: min(420px, calc(100vw - var(--page-padding) * 2));
 }
 
 .toast {
-  padding: 16px 20px !important;
+  width: 100%;
+  padding: clamp(16px, 4vw, 24px) !important;
   margin: 0 !important;
-  animation: slideIn 0.2s ease forwards;
+  /* Fondo solido y opaco: el aviso se lee sobre cualquier cosa */
+  background-color: #1a1d21 !important;
+  text-align: center;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.55);
+  animation: aparecer 0.18s ease forwards;
 }
 
 .message {
-  font-size: 0.7rem;
+  font-size: clamp(0.7rem, 3vw, 0.8rem);
   line-height: 1.9;
   margin: 0;
+  color: #e76e55;         /* rojo NES para todos los avisos */
+  text-align: center;
 }
 
-@keyframes slideIn {
+/* Aparece desde el centro con un pequeno rebote, en vez de deslizarse
+   desde la derecha (lo que ya no tiene sentido estando centrado) */
+@keyframes aparecer {
   from {
-    transform: translateX(120%);
+    transform: scale(0.85);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    transform: scale(1);
     opacity: 1;
   }
 }

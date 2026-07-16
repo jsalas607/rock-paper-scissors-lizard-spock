@@ -4,8 +4,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
-  padding: 48px var(--page-padding);
+  gap: clamp(20px, 5vw, 40px);
+  padding: clamp(24px, 6vw, 48px) var(--page-padding);
   text-align: center;
 }
 
@@ -14,14 +14,15 @@
   max-width: var(--game-max-width);
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;         /* en movil los botones se apilan en vez de desbordar */
   justify-content: center;
-  gap: 20px;
+  gap: clamp(12px, 3vw, 20px);
 }
 
 .gamaover_butoon_reset,
 .gamaover_butoon_final {
   width: auto;
-  min-width: 220px;
-  padding: 20px 28px !important;
+  min-width: min(220px, 100%);
+  padding: clamp(14px, 3vw, 20px) clamp(16px, 4vw, 28px) !important;
   font-size: 1rem !important;
 }

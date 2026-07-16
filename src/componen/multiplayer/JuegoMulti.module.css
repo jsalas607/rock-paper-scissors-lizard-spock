@@ -15,8 +15,11 @@
 .marcador {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 12px 24px;
+  justify-content: center;
+  flex-wrap: wrap;         /* si los nombres son largos, baja a otra linea */
+  gap: clamp(8px, 2vw, 20px);
+  padding: 12px var(--page-padding);
+  text-align: center;
 }
 
 .marcadorItem {
@@ -60,13 +63,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: var(--hand-gap);
 }
 
 .svgHand {
   width: var(--hand-size);
   height: var(--hand-size);
-  padding: 8px;
+  flex-shrink: 0;          /* nunca se deforma aunque falte espacio */
+  padding: clamp(4px, 1vw, 8px);
   object-fit: contain;
   border-radius: 50%;
   transition: transform 0.1s ease;
@@ -128,9 +132,10 @@
 
 .rivalEsperandoMsj {
   font-size: 0.65rem;
-  min-height: 126px;
+  min-height: calc(var(--hand-size) + 16px);
   display: flex;
   align-items: center;
+  text-align: center;
 }
 
 /* ── Fin de juego ── */
@@ -165,10 +170,11 @@
 /* ── Botón abandonar ── */
 .abandonar {
   position: fixed !important;
-  bottom: 32px !important;
-  right: 32px !important;
-  width: calc(var(--hand-size) * 0.5) !important;
-  height: calc(var(--hand-size) * 0.5) !important;
+  bottom: var(--page-padding) !important;
+  right: var(--page-padding) !important;
+  /* max() garantiza 44px minimos: objetivo tactil comodo en movil */
+  width: max(44px, calc(var(--hand-size) * 0.5)) !important;
+  height: max(44px, calc(var(--hand-size) * 0.5)) !important;
   min-width: unset !important;
   padding: 0 !important;
   font-size: 0.75rem !important;

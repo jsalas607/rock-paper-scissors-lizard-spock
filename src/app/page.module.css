@@ -32,10 +32,11 @@
 
 .abandonBtn {
   position: fixed !important;
-  bottom: 32px !important;
-  right: 32px !important;
-  width: calc(var(--hand-size) * 0.5) !important;
-  height: calc(var(--hand-size) * 0.5) !important;
+  bottom: var(--page-padding) !important;
+  right: var(--page-padding) !important;
+  /* max() garantiza 44px minimos: objetivo tactil comodo en movil */
+  width: max(44px, calc(var(--hand-size) * 0.5)) !important;
+  height: max(44px, calc(var(--hand-size) * 0.5)) !important;
   min-width: unset !important;
   padding: 0 !important;
   font-size: 0.75rem !important;

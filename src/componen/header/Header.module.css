@@ -1,10 +1,11 @@
 .figcaption {
   width: 100%;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
+  gap: var(--hand-gap);
   padding: 18px 0;
-  min-height: 126px;
+  min-height: calc(var(--hand-size) + 16px);
 }
 
 .roca {
@@ -40,7 +41,8 @@
 .svgHand {
   width: var(--hand-size);
   height: var(--hand-size);
-  padding: 8px;
+  flex-shrink: 0;          /* nunca se deforma aunque falte espacio */
+  padding: clamp(4px, 1vw, 8px);
   object-fit: contain;
 }
 
@@ -51,12 +53,12 @@
   justify-content: center;
   align-items: center;
   padding: 18px 0;
-  min-height: 126px;
+  min-height: calc(var(--hand-size) + 16px);
   gap: 6px;
 }
 
 .cpuIcon {
-  font-size: 3.8rem;
+  font-size: clamp(2.2rem, 9vw, 3.8rem);
   line-height: 1;
 }
 
@@ -71,5 +73,5 @@
   justify-content: center;
   align-items: center;
   padding: 18px 0;
-  min-height: 126px;
+  min-height: calc(var(--hand-size) + 16px);
 }
