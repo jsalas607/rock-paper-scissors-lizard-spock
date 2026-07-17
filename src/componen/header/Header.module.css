@@ -57,9 +57,12 @@
   gap: 6px;
 }
 
+/* Antes era un emoji y el tamano se daba con font-size. Al ser ahora una
+   imagen hace falta width/height: font-size solo afecta al texto. */
 .cpuIcon {
-  font-size: clamp(2.2rem, 9vw, 3.8rem);
-  line-height: 1;
+  width: clamp(2.6rem, 11vw, 4.4rem);
+  height: auto;
+  object-fit: contain;
 }
 
 .cpuLabel {

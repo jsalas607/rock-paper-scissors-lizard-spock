@@ -3,6 +3,7 @@ import React from 'react'
 import styles from "@/src/componen/header/Header.module.css"
 import { gameOptions } from '@/src/const/const'
 import Image from 'next/image'
+import cpuIcon from '@/public/imagensvg/cpu.png'
 import { useUserName } from "@/src/context/UserNameContext.js"
 
 const Header = () => {
@@ -11,7 +12,16 @@ const Header = () => {
     if (!selectedItemCompu && !isGameOver) {
         return (
             <figcaption className={styles.cpuIdle}>
-                <span className={styles.cpuIcon}>🖥️</span>
+                {/* unoptimized: Next.js convertiria el PNG a WebP con perdida,
+                    y eso emborrona los bordes duros del pixel art. Son 19KB,
+                    no compensa degradarlo por ahorrar 15KB. */}
+                <Image
+                    src={cpuIcon}
+                    alt="CPU"
+                    priority
+                    unoptimized
+                    className={styles.cpuIcon}
+                />
                 <span className={`nes-text is-disabled ${styles.cpuLabel}`}>CPU</span>
             </figcaption>
         );
