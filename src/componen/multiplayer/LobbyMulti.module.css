@@ -1,5 +1,6 @@
 .lobby {
   min-height: 100vh;
+  min-height: 100dvh;   /* sigue el area visible real en movil */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -13,14 +14,16 @@
   text-align: center;
 }
 
+/* Suelo en px con max(): en movil la raiz vale 11px y estos valores en rem
+   daban textos de 6-8px, ilegibles. */
 .subtitulo {
-  font-size: 0.6rem;
+  font-size: max(12px, 0.8rem);
   letter-spacing: 2px;
   margin: 0 !important;
 }
 
 .error {
-  font-size: 0.6rem;
+  font-size: max(13px, 0.85rem);
   text-align: center;
 }
 
@@ -32,10 +35,13 @@
   width: 100%;
 }
 
+/* Ancho fijo para todos: si no, cada boton mide segun el largo de su
+   texto y "volver al inicio" sale mas ancho que "crear sala".
+   min() con 100% evita que se desborden en pantallas muy estrechas. */
 .btn {
-  font-size: 0.75rem !important;
-  padding: 16px clamp(14px, 4vw, 28px) !important;
-  min-width: min(180px, 100%);
+  font-size: max(13px, 0.9rem) !important;
+  padding: 16px clamp(10px, 3vw, 20px) !important;
+  width: min(320px, 100%);
 }
 
 .panel {
@@ -48,7 +54,7 @@
 }
 
 .panelTitulo {
-  font-size: 0.8rem;
+  font-size: max(15px, 1rem);
 }
 
 .rondasSelector {
@@ -59,7 +65,7 @@
 }
 
 .rondasLabel {
-  font-size: 0.6rem !important;
+  font-size: max(13px, 0.85rem) !important;
   letter-spacing: 2px;
   margin: 0 !important;
 }
@@ -76,7 +82,7 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  font-size: 0.6rem;
+  font-size: max(13px, 0.85rem);
 }
 
 .acciones {

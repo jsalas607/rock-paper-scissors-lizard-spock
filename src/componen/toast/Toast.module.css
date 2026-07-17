@@ -28,8 +28,13 @@
   font-size: clamp(0.7rem, 3vw, 0.8rem);
   line-height: 1.9;
   margin: 0;
-  color: #e76e55;         /* rojo NES para todos los avisos */
+  color: #e76e55;         /* rojo NES: el color por defecto de los avisos */
   text-align: center;
+}
+
+/* Confirmaciones (ej: "Enlace copiado"): verde. No son avisos. */
+.exito {
+  color: #92cc41;
 }
 
 /* Aparece desde el centro con un pequeno rebote, en vez de deslizarse

@@ -1,0 +1,50 @@
+.invitacion {
+  min-height: 100vh;
+  min-height: 100dvh;   /* sigue el area visible real en movil */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 4vh, 32px);
+  padding: clamp(16px, 4vh, 48px) var(--page-padding);
+  text-align: center;
+}
+
+.titulo {
+  font-size: max(16px, 1.1rem);
+  line-height: 2;
+  margin: 0;
+}
+
+.sala {
+  font-size: max(14px, 1rem);
+  letter-spacing: clamp(2px, 1vw, 6px);
+  margin: 0 !important;
+}
+
+.error {
+  font-size: max(13px, 0.85rem);
+  margin: 0 !important;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 3vh, 24px);
+  width: 100%;
+}
+
+.input {
+  font-size: max(14px, 1rem) !important;
+  text-align: center;
+  width: min(320px, 100%);
+}
+
+/* Mismo ancho para todos los botones, igual que en el lobby: si no, cada
+   uno mediria segun el largo de su texto. */
+.btn {
+  font-size: max(13px, 0.9rem) !important;
+  padding: 16px clamp(10px, 3vw, 20px) !important;
+  width: min(320px, 100%);
+}

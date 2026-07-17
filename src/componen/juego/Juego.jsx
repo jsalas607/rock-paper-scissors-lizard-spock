@@ -64,6 +64,19 @@ const Juego = () => {
             ? gameOptions.filter(item => item.name === selectedItemUser)
             : gameOptions;
 
+    // Una mano no se puede elegir si la partida acabo, si ya elegiste o
+    // si el contador esta corriendo.
+    const bloqueada = isGameOver || isCooldownActive || selectedItemUser !== null;
+
+    // Enter y Espacio son las teclas que activan un boton. Una <img> no las
+    // maneja sola, hay que hacerlo a mano.
+    const handleKeyDown = (e, itemName) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();   // Espacio haria scroll de la pagina
+            handleImageClick(itemName);
+        }
+    };
+
     return (
         <figcaption className={`${isGameOver || !selectedItemUser ? styles.figcaption : styles.centerSingleImage}`}>
             {imagesToRender.map((item) => (
@@ -74,7 +87,12 @@ const Juego = () => {
                     src={item.image}
                     width={72}
                     height={72}
-                    onClick={(isGameOver || isCooldownActive || selectedItemUser !== null) ? undefined : () => handleImageClick(item.name)}
+                    role="button"
+                    aria-label={`Elegir ${item.name}`}
+                    aria-disabled={bloqueada}
+                    tabIndex={bloqueada ? -1 : 0}
+                    onClick={bloqueada ? undefined : () => handleImageClick(item.name)}
+                    onKeyDown={bloqueada ? undefined : (e) => handleKeyDown(e, item.name)}
                 />
             ))}
         </figcaption>

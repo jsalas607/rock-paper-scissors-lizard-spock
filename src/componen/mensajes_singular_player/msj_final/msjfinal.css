@@ -1,5 +1,6 @@
 .msj_final_page {
   min-height: 100vh;
+  min-height: 100dvh;   /* sigue el area visible real en movil */
   display: flex;
   flex-direction: column;
   align-items: center;

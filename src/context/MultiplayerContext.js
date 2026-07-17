@@ -1,7 +1,7 @@
 'use client'
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { db } from '@/src/lib/firebase';
-import { ref, set, get, onValue, update, remove, onDisconnect } from 'firebase/database';
+import { ref, set, get, onValue, update, remove, serverTimestamp } from 'firebase/database';
 import { useUserName } from '@/src/context/UserNameContext';
 
 const MultiplayerContext = createContext();
@@ -21,6 +21,11 @@ const generarCodigo = () => {
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 };
 
+// Una sala se considera abandonada si nadie da señales durante este tiempo.
+// OJO: no es "creada hace X" sino "muda desde hace X" -> ver la señal de vida.
+const VIDA_SIN_SENAL_MS = 10 * 60 * 1000;   // 10 minutos
+const CADA_CUANTO_SENAL_MS = 60 * 1000;     // 1 minuto
+
 export const MultiplayerProvider = ({ children }) => {
   const { setScreen } = useUserName();
 
@@ -39,6 +44,46 @@ export const MultiplayerProvider = ({ children }) => {
 
   // Evita que el efecto de resultado se ejecute más de una vez por ronda
   const procesandoRondaRef = useRef(false);
+
+  // Guarda el temporizador que cierra la ronda. Sin esto, si alguien
+  // abandona mientras corre, el temporizador escribiria sobre una sala ya
+  // borrada y update() la RECREARIA, dejando salas huerfanas en Firebase.
+  const timeoutRef = useRef(null);
+  const cancelarTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+  useEffect(() => cancelarTimeout, []);   // limpieza al desmontar
+
+  // ─── Hora de servidor ───────────────────────────────────────────
+  // El barrido lo ejecuta el movil de quien crea la sala. Si su reloj va
+  // adelantado borraria salas ajenas VIVAS. Firebase publica el desfase
+  // entre el reloj local y el suyo: con el, todos razonan con la misma hora.
+  const offsetRelojRef = useRef(0);
+  useEffect(() => {
+    const unsub = onValue(ref(db, '.info/serverTimeOffset'), (s) => {
+      offsetRelojRef.current = s.val() || 0;
+    });
+    return () => unsub();
+  }, []);
+  const ahoraServidor = () => Date.now() + offsetRelojRef.current;
+
+  // ─── Señal de vida ──────────────────────────────────────────────
+  // Mientras haya sala (esperando o jugando) dice "sigo aqui" cada minuto.
+  // Es lo que permite que el barrido signifique "muda desde hace 10 min" en
+  // vez de "creada hace 10 min", que borraria salas en uso.
+  // Al irse a WhatsApp la señal se corta y se reanuda al volver.
+  useEffect(() => {
+    if (!codigoSala) return;
+    const senal = () => {
+      update(ref(db, `salas/${codigoSala}`), { ultimaSenal: serverTimestamp() }).catch(() => {});
+    };
+    senal();
+    const iv = setInterval(senal, CADA_CUANTO_SENAL_MS);
+    return () => clearInterval(iv);
+  }, [codigoSala]);
 
   // ─── Escucha cambios en tiempo real de la sala ───────────────────
   useEffect(() => {
@@ -107,23 +152,61 @@ export const MultiplayerProvider = ({ children }) => {
       const totalRondas = datosSala.totalRondas;
       const hayGanador = nuevasVictorias.victorias1 >= totalRondas || nuevasVictorias.victorias2 >= totalRondas;
 
-      update(ref(db, `salas/${codigoSala}`), {
-        ...nuevasVictorias,
-        estado: hayGanador ? 'finJuego' : 'jugando',
-      });
+      // Solo los puntos: el estado NO pasa a finJuego todavia. Asi las dos
+      // manos y el mensaje de la ronda siguen en pantalla y da tiempo a ver
+      // con que mano se gano.
+      update(ref(db, `salas/${codigoSala}`), nuevasVictorias);
 
-      // Después de 2.5s, limpiar manos para la siguiente ronda
-      if (!hayGanador) {
-        setTimeout(() => {
+      cancelarTimeout();
+      timeoutRef.current = setTimeout(() => {
+        if (hayGanador) {
+          update(ref(db, `salas/${codigoSala}`), { estado: 'finJuego' });
+        } else {
           update(ref(db, `salas/${codigoSala}`), {
             'jugador1/mano': null,
             'jugador2/mano': null,
           });
-          setResultadoRonda(null);
-        }, 2500);
-      }
+        }
+        timeoutRef.current = null;
+      }, hayGanador ? 4000 : 2500);
     }
   }, [datosSala, rolJugador, codigoSala]);
+
+  // ─── Revancha: cuando ambos aceptan, jugador1 reinicia la sala ───
+  useEffect(() => {
+    if (!datosSala || rolJugador !== 'jugador1') return;
+    if (datosSala.estado !== 'finJuego') return;
+
+    const r = datosSala.revancha;
+    if (!r?.jugador1 || !r?.jugador2) return;   // falta alguno por aceptar
+
+    // Solo jugador1 escribe, igual que con los puntajes (evita colisiones)
+    update(ref(db, `salas/${codigoSala}`), {
+      victorias1: 0,
+      victorias2: 0,
+      'jugador1/mano': null,
+      'jugador2/mano': null,
+      estado: 'jugando',
+      revancha: null,
+    });
+  }, [datosSala, rolJugador, codigoSala]);
+
+  // ─── Barrido de salas mudas ──────────────────────────────────────
+  // Ya no hay onDisconnect, asi que una sala cuyo creador desaparezca para
+  // siempre se quedaria en Firebase eternamente. Se limpian al crear una
+  // nueva, que es el momento natural.
+  const barrerSalasMudas = async () => {
+    const snap = await get(ref(db, 'salas'));
+    const salas = snap.val();
+    if (!salas) return;
+
+    const limite = ahoraServidor() - VIDA_SIN_SENAL_MS;
+    const mudas = Object.entries(salas)
+      .filter(([, v]) => (v.ultimaSenal ?? v.creadoEn ?? 0) < limite)
+      .map(([codigo]) => codigo);
+
+    await Promise.all(mudas.map((c) => remove(ref(db, `salas/${c}`))));
+  };
 
   // ─── Crear sala ───────────────────────────────────────────────────
   const crearSala = useCallback(async (nombre, totalRondas) => {
@@ -140,14 +223,23 @@ export const MultiplayerProvider = ({ children }) => {
       victorias1:  0,
       victorias2:  0,
       estado:      'esperando',
-      creadoEn:    Date.now(),
+      // serverTimestamp y no Date.now(): si el movil tuviera la hora mal,
+      // su sala se barreria al instante o no se barreria jamas.
+      creadoEn:    serverTimestamp(),
+      ultimaSenal: serverTimestamp(),
     };
 
     try {
       await set(salaRef, datosSalaInicial);
 
-      // Si jugador1 se desconecta, elimina la sala
-      onDisconnect(salaRef).remove();
+      // Antes habia un onDisconnect que borraba la sala al desconectarse.
+      // Se quito: al irse a WhatsApp, Android congela la pestaña, cae el
+      // WebSocket y Firebase lo tomaba por un abandono definitivo, borrando
+      // la sala a los ~60s. Ahora solo muere por accion explicita
+      // (cancelar / A / volver al inicio) o por el barrido de salas mudas.
+
+      // Limpieza de fondo, sin await: no debe retrasar al usuario
+      barrerSalasMudas().catch(() => {});
 
       setCodigoSala(codigo);
       setRolJugador('jugador1');
@@ -160,6 +252,8 @@ export const MultiplayerProvider = ({ children }) => {
   }, []);
 
   // ─── Unirse a sala ────────────────────────────────────────────────
+  // Devuelve true si entro. La pantalla de invitacion lo necesita para
+  // saber si cambiar de pantalla o quedarse mostrando errorSala.
   const unirseASala = useCallback(async (codigo, nombre) => {
     setCargando(true);
     setErrorSala(null);
@@ -172,16 +266,14 @@ export const MultiplayerProvider = ({ children }) => {
 
       if (!snapshot.exists()) {
         setErrorSala('Sala no encontrada. Verifica el código.');
-        setCargando(false);
-        return;
+        return false;
       }
 
       const datos = snapshot.val();
 
       if (datos.jugador2?.nombre) {
         setErrorSala('La sala ya está llena.');
-        setCargando(false);
-        return;
+        return false;
       }
 
       await update(ref(db, `salas/${codigoUpper}/jugador2`), { nombre, mano: null });
@@ -192,8 +284,10 @@ export const MultiplayerProvider = ({ children }) => {
       setCodigoSala(codigoUpper);
       setRolJugador('jugador2');
       setScreenMulti('juego');
+      return true;
     } catch (err) {
       setErrorSala('Error al unirse a la sala. Intenta de nuevo.');
+      return false;
     } finally {
       setCargando(false);
     }
@@ -210,8 +304,20 @@ export const MultiplayerProvider = ({ children }) => {
     await update(ref(db, `salas/${codigoSala}/${rolJugador}`), { mano });
   }, [codigoSala, rolJugador, datosSala]);
 
+  // ─── Pedir revancha ──────────────────────────────────────────────
+  // Solo marca tu casilla. La sala se reinicia cuando ambos han aceptado,
+  // en el useEffect de arriba.
+  const pedirRevancha = useCallback(async () => {
+    if (!codigoSala || !rolJugador) return;
+    await update(ref(db, `salas/${codigoSala}/revancha`), { [rolJugador]: true });
+  }, [codigoSala, rolJugador]);
+
   // ─── Abandonar sala ───────────────────────────────────────────────
   const abandonarSala = useCallback(async () => {
+    // Primero el temporizador: si no, escribiria sobre la sala ya borrada
+    // y update() la recrearia como sala huerfana.
+    cancelarTimeout();
+
     if (codigoSala) {
       try {
         await remove(ref(db, `salas/${codigoSala}`));
@@ -240,6 +346,7 @@ export const MultiplayerProvider = ({ children }) => {
     crearSala,
     unirseASala,
     elegirMano,
+    pedirRevancha,
     abandonarSala,
   };
 

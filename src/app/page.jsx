@@ -9,6 +9,7 @@ import GameOverScreen from "@/src/componen/GameOverScreen/GameOverScreen";
 import LobbyMulti from "@/src/componen/multiplayer/LobbyMulti";
 import SalaEspera from "@/src/componen/multiplayer/SalaEspera";
 import JuegoMulti from "@/src/componen/multiplayer/JuegoMulti";
+import Invitacion from "@/src/componen/multiplayer/Invitacion";
 import { useUserName } from "@/src/context/UserNameContext.js";
 import { useMultiplayer } from "@/src/context/MultiplayerContext.js";
 import styles from "@/src/app/page.module.css";
@@ -16,6 +17,9 @@ import styles from "@/src/app/page.module.css";
 export default function Home() {
   const { screen, isGameOver, resetAllGame } = useUserName();
   const { screenMulti } = useMultiplayer();
+
+  // ── Invitacion recibida por enlace (?sala=...) ───────────────────
+  if (screen === 'invitacion') return <Invitacion />;
 
   // ── Pantallas de multijugador ────────────────────────────────────
   if (screen === 'multiplayer') {

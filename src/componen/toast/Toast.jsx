@@ -15,7 +15,11 @@ const Toast = () => {
           role="alert"
           className={`nes-container is-rounded ${styles.toast}`}
         >
-          <p className={styles.message}>{toast.message}</p>
+          {/* Los avisos van en rojo. Las confirmaciones ("Enlace copiado")
+              en verde: en rojo pareceria que algo fallo. */}
+          <p className={`${styles.message} ${toast.type === 'success' ? styles.exito : ''}`}>
+            {toast.message}
+          </p>
         </div>
       ))}
     </div>

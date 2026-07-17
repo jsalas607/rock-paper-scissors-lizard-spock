@@ -24,7 +24,27 @@ export const UserNameProvider = ({ children }) => {
     const [isGameOver, setIsGameOver] = useState(false);
     const [countdown, setCountdown] = useState(null);
 
+    // Invitacion recibida por enlace: ?sala=CODIGO&de=NOMBRE
+    const [codigoInvitacion, setCodigoInvitacion] = useState(null);
+    const [invitadoPor, setInvitadoPor] = useState(null);
 
+    // Se lee window.location.search y NO useSearchParams() a proposito: ese
+    // hook obligaria a envolver la pagina en <Suspense> o la volveria
+    // dinamica, y hoy "/" se prerenderiza como estatica.
+    useEffect(() => {
+        const p = new URLSearchParams(window.location.search);
+        const cod = p.get('sala');
+        if (!cod) return;
+
+        setCodigoInvitacion(cod.toUpperCase().trim());
+
+        // El nombre viene de la URL y cualquiera puede manipularlo: React ya
+        // escapa el texto, pero se acota para que no reviente el diseno.
+        const de = p.get('de');
+        if (de) setInvitadoPor(de.trim().slice(0, 20));
+
+        setScreen('invitacion');
+    }, []);
 
     // Reset explícito al recargar la página (F5)
     useEffect(() => {
@@ -144,7 +164,9 @@ useEffect(() => {
         screen,
         setScreen,
         totalRounds,
-        setTotalRounds
+        setTotalRounds,
+        codigoInvitacion,
+        invitadoPor
     };
 
     return (

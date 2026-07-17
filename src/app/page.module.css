@@ -1,17 +1,18 @@
 /* ── Landing ── */
 .main {
   min-height: 100vh;
+  min-height: 100dvh;   /* sigue el area visible real en movil */
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 var(--page-padding) 40px;
+  padding: 0 var(--page-padding) clamp(8px, 3.8vh, 40px);
 }
 
 .weaponsSection {
   width: 100%;
   max-width: var(--game-max-width);
-  margin-top: 36px;
-  padding-top: 16px;
+  margin-top: clamp(6px, 3.4vh, 36px);
+  padding-top: clamp(5px, 1.6vh, 16px);
   border-top: 4px solid rgba(146, 204, 65, 0.35);
   text-align: center;
 }
@@ -28,6 +29,12 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  /* El boton "A" esta fijo en la esquina inferior derecha. En pantallas
+     estrechas la fila de manos llega hasta esa esquina y la ultima mano
+     queda debajo del boton, asi que se reserva hueco para subirlas.
+     A partir de ~620px de ancho el boton ya cae fuera de la fila y max()
+     deja la reserva en 0 -> en escritorio no se mueve nada. */
+  padding-bottom: max(0px, calc((620px - 100vw) * 0.25));
 }
 
 .abandonBtn {
@@ -50,6 +57,7 @@
 
 .gamePage {
   min-height: 100vh;
+  min-height: 100dvh;   /* sigue el area visible real en movil */
   display: flex;
   flex-direction: column;
   max-width: var(--game-max-width);

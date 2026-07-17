@@ -10,6 +10,7 @@ const JuegoMulti = () => {
     rolJugador,
     resultadoRonda,
     elegirMano,
+    pedirRevancha,
     abandonarSala,
     codigoSala,
   } = useMultiplayer();
@@ -30,6 +31,18 @@ const JuegoMulti = () => {
   const yoGane     = misVictorias >= totalRondas;
   const ambosEligieron = !!yo?.mano && !!rival?.mano;
 
+  // No puedes elegir si ya elegiste o si se esta mostrando el resultado
+  const bloqueada = !!yo?.mano || !!resultadoRonda;
+
+  // Enter y Espacio son las teclas que activan un boton. Una <img> no las
+  // maneja sola, hay que hacerlo a mano.
+  const handleKeyDown = (e, mano) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();   // Espacio haria scroll de la pagina
+      elegirMano(mano);
+    }
+  };
+
   // Mensaje del resultado de la ronda
   const mensajeRonda = () => {
     if (!resultadoRonda) return null;
@@ -44,6 +57,11 @@ const JuegoMulti = () => {
 
   // ── Pantalla de fin de juego ──────────────────────────────────────
   if (juegoTerminado) {
+    // Estado de la revancha, derivado de Firebase (nadie guarda estado local)
+    const revancha   = datosSala.revancha ?? {};
+    const yoPedi     = !!revancha[rolJugador];
+    const rivalPidio = !!revancha[rolRival];
+
     return (
       <div className={styles.finJuego}>
         <h1 className={`nes-text ${yoGane ? 'is-success' : 'is-error'} ${styles.finTitulo}`}>
@@ -56,12 +74,35 @@ const JuegoMulti = () => {
           {' — '}
           <span className="nes-text is-error">{rival?.nombre}: {susVictorias}</span>
         </h2>
-        <button
-          className={`nes-btn is-primary ${styles.finBtn}`}
-          onClick={abandonarSala}
-        >
-          volver al inicio
-        </button>
+
+        {/* Revancha: hacen falta los dos. Cuando ambos aceptan, el contexto
+            reinicia la sala solo. */}
+        {rivalPidio && !yoPedi && (
+          <p className={`nes-text is-warning ${styles.revanchaAviso}`}>
+            ¡{rival?.nombre} quiere la revancha!
+          </p>
+        )}
+        {yoPedi && !rivalPidio && (
+          <p className={`nes-text is-disabled ${styles.revanchaAviso}`}>
+            esperando a {rival?.nombre ?? 'tu rival'}...
+          </p>
+        )}
+
+        <div className={styles.finAcciones}>
+          <button
+            className={`nes-btn ${yoPedi ? 'is-disabled' : 'is-success'} ${styles.finBtn}`}
+            onClick={pedirRevancha}
+            disabled={yoPedi}
+          >
+            {rivalPidio ? 'aceptar revancha' : 'revancha'}
+          </button>
+          <button
+            className={`nes-btn is-primary ${styles.finBtn}`}
+            onClick={abandonarSala}
+          >
+            volver al inicio
+          </button>
+        </div>
       </div>
     );
   }
@@ -143,12 +184,17 @@ const JuegoMulti = () => {
               alt={item.name}
               width={110}
               height={110}
-              onClick={() => !yo.mano && !resultadoRonda && elegirMano(item.name)}
+              role="button"
+              aria-label={`Elegir ${item.name}`}
+              aria-disabled={bloqueada}
+              tabIndex={bloqueada ? -1 : 0}
+              onClick={bloqueada ? undefined : () => elegirMano(item.name)}
+              onKeyDown={bloqueada ? undefined : (e) => handleKeyDown(e, item.name)}
               className={`
                 ${styles.svgHand}
                 ${styles[item.name]}
                 ${yo.mano === item.name ? styles.seleccionada : ''}
-                ${yo.mano || resultadoRonda ? styles.deshabilitada : styles.activa}
+                ${bloqueada ? styles.deshabilitada : styles.activa}
               `}
             />
           ))}

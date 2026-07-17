@@ -1,5 +1,6 @@
 .juego {
   min-height: 100vh;
+  min-height: 100dvh;   /* sigue el area visible real en movil */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,12 +23,15 @@
   text-align: center;
 }
 
+/* Los tamanos llevan un suelo en px con max(): en movil la raiz vale 11px
+   y un valor en rem tan pequeno daba textos de 5-8px, ilegibles. El max()
+   se lee solo: "nunca por debajo de X". */
 .marcadorItem {
-  font-size: 0.7rem;
+  font-size: max(13px, 0.95rem);
 }
 
 .marcadorSep {
-  font-size: 0.6rem;
+  font-size: max(12px, 0.8rem);
 }
 
 /* ── Secciones rival / jugador ── */
@@ -48,10 +52,13 @@
 .miSection {
   border-top: 3px solid rgba(146, 204, 65, 0.4);
   margin-top: auto;
+  /* Mismo motivo que en .gameFooter: el boton "A" fijo en la esquina
+     inferior derecha pisa la ultima mano en pantallas estrechas. */
+  padding-bottom: max(16px, calc((620px - 100vw) * 0.25));
 }
 
 .seccionLabel {
-  font-size: 0.5rem;
+  font-size: max(12px, 0.8rem);
   letter-spacing: 3px;
   margin: 0 !important;
 }
@@ -78,6 +85,12 @@
 
 .activa {
   cursor: pointer;
+}
+
+/* :focus-visible solo se dispara con teclado, no al hacer clic con el raton */
+.activa:focus-visible {
+  outline: 4px solid #92cc41;
+  outline-offset: 4px;
 }
 
 .activa:hover {
@@ -114,24 +127,24 @@
 }
 
 .estadoTexto {
-  font-size: 0.9rem;
+  font-size: max(15px, 1.05rem);
   text-align: center;
   line-height: 2.2;
 }
 
 .resultadoTexto {
-  font-size: 1rem;
+  font-size: max(16px, 1.1rem);
   text-align: center;
   line-height: 2;
 }
 
 .resultadoManos {
-  font-size: 0.6rem;
+  font-size: max(12px, 0.85rem);
   text-align: center;
 }
 
 .rivalEsperandoMsj {
-  font-size: 0.65rem;
+  font-size: max(13px, 0.9rem);
   min-height: calc(var(--hand-size) + 16px);
   display: flex;
   align-items: center;
@@ -141,6 +154,7 @@
 /* ── Fin de juego ── */
 .finJuego {
   min-height: 100vh;
+  min-height: 100dvh;   /* sigue el area visible real en movil */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -153,18 +167,35 @@
 }
 
 .finTitulo {
-  font-size: 1.2rem;
+  font-size: max(17px, 1.2rem);
   line-height: 2;
 }
 
 .finPuntaje {
-  font-size: 0.75rem;
+  font-size: max(13px, 0.85rem);
   line-height: 2.5;
 }
 
+.revanchaAviso {
+  font-size: max(13px, 0.9rem);
+  text-align: center;
+  line-height: 1.8;
+  margin: 0 !important;
+}
+
+.finAcciones {
+  display: flex;
+  flex-wrap: wrap;         /* en movil los botones se apilan */
+  justify-content: center;
+  gap: clamp(12px, 3vw, 20px);
+}
+
+/* Mismo criterio que en el lobby: ancho fijo para que "revancha" y
+   "volver al inicio" no midan distinto por el largo del texto. */
 .finBtn {
-  font-size: 0.85rem !important;
-  padding: 20px 36px !important;
+  font-size: max(14px, 0.9rem) !important;
+  padding: clamp(14px, 3vw, 20px) clamp(10px, 3vw, 20px) !important;
+  width: min(300px, 100%);
 }
 
 /* ── Botón abandonar ── */

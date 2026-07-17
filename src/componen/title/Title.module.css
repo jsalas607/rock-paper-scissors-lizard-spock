@@ -1,16 +1,21 @@
+/* Medidas verticales en vh (1vh = 1% del ALTO de pantalla): encogen solas
+   en pantallas bajas para que el landing quepa sin scroll.
+   Los coeficientes estan calculados para tocar su tope justo a 1080px de
+   alto -> en escritorio queda identico. Regla: para un tope M, el
+   coeficiente debe ser >= M/10.8 vh. */
 .header {
   width: 100%;
   max-width: var(--game-max-width);
-  padding: 48px 0 28px;
+  padding: clamp(12px, 4.6vh, 48px) 0 clamp(8px, 2.7vh, 28px);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: clamp(5px, 1.6vh, 16px);
 }
 
 .header h1 {
-  font-size: 1.5rem;
+  font-size: clamp(0.85rem, 2.3vh, 1.5rem);
   margin: 0;
-  line-height: 1.8;
+  line-height: clamp(1.35em, 4.1vh, 1.8em);
 }

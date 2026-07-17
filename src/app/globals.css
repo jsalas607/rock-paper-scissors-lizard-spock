@@ -37,7 +37,12 @@ html {
 html, body {
   margin: 0;
   padding: 0;
+  /* En movil 100vh NO es lo que se ve: es la pantalla sin la barra del
+     navegador, asi que fuerza scroll aunque el contenido quepa.
+     100dvh si sigue el area visible. La primera linea es la reserva
+     para navegadores que no entienden dvh. */
   min-height: 100vh;
+  min-height: 100dvh;
   background: radial-gradient(ellipse at center, #2a2f38 0%, #212529 65%);
   font-family: 'Press Start 2P', cursive;
   color: #ffffff;
@@ -47,4 +52,36 @@ html, body {
 /* Ninguna imagen debe desbordar ni deformarse al encogerse el contenedor */
 img {
   max-width: 100%;
+}
+
+/* ── Foco visible ──────────────────────────────────────────────────
+   Sin esto, quien navega con teclado no ve donde esta parado.
+   :focus-visible (en vez de :focus) solo se activa con teclado, asi que
+   no aparece un recuadro al hacer clic con el raton. */
+:focus-visible {
+  outline: 4px solid #92cc41;
+  outline-offset: 3px;
+}
+
+/* Las manos son circulares: el anillo debe seguir su forma */
+[role="button"]:focus-visible {
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+/* ── Movimiento reducido ───────────────────────────────────────────
+   No es un punto de corte por tamano de pantalla (eso lo resuelve
+   clamp): consulta una preferencia de accesibilidad del sistema
+   operativo. Quien la activa suele tener trastornos vestibulares o
+   fotosensibilidad, y aqui hay un parpadeo infinito imposible de
+   esquivar de otra forma. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;   /* mata el parpadeo infinito */
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
